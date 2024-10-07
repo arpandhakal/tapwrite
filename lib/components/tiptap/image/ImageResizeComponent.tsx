@@ -27,15 +27,15 @@ export const ImageResizeComponent = (props: any) => {
       const naturalHeight = imageRef.current.naturalHeight
       const proseMirrorContainerDiv = document.querySelector('.tiptap')
       if (proseMirrorContainerDiv) {
+        const computedStyle = getComputedStyle(proseMirrorContainerDiv)
+        const paddingLeft = parseFloat(computedStyle.paddingLeft)
+        const paddingRight = parseFloat(computedStyle.paddingRight)
         setMaxWidth(
-          proseMirrorContainerDiv.clientWidth -
-            0.015 * proseMirrorContainerDiv.clientWidth
+          proseMirrorContainerDiv.clientWidth - paddingLeft - paddingRight
         )
 
         setMaxHeight(
-          (proseMirrorContainerDiv.clientWidth -
-            0.015 * proseMirrorContainerDiv.clientWidth) /
-            (naturalWidth / naturalHeight)
+          proseMirrorContainerDiv.clientWidth / (naturalWidth / naturalHeight)
         )
 
         if (typeof props.node.attrs.width !== 'number') {
@@ -46,6 +46,14 @@ export const ImageResizeComponent = (props: any) => {
         if (typeof props.node.attrs.height !== 'number') {
           props.updateAttributes({
             height: naturalHeight,
+          })
+        }
+        if (naturalWidth < 40) {
+          props.updateAttributes({
+            width: 40,
+          })
+          props.updateAttributes({
+            height: 40 / aspectRatio,
           })
         }
       }
@@ -84,9 +92,9 @@ export const ImageResizeComponent = (props: any) => {
     const newWidth = parseFloat(ref.style.width)
     const newHeight = newWidth / aspectRatio
 
-    const widthDiff = newWidth > maxWidth ? newWidth - maxWidth : 0
-    const heightDiff = newHeight > maxHeight ? newHeight - maxHeight : 0
-
+    const widthDiff = newWidth >= maxWidth - 5 ? newWidth - (maxWidth - 5) : 0
+    const heightDiff =
+      newHeight >= maxHeight - 5 ? newHeight - (maxHeight - 5) : 0
     props.updateAttributes({
       width: widthDiff > 0 ? 650 : newWidth,
       height: heightDiff > 0 ? 650 / aspectRatio : newHeight,
@@ -106,7 +114,6 @@ export const ImageResizeComponent = (props: any) => {
           size={size}
           onResize={onResize}
           style={{
-            outline: props.selected ? '3px solid #0C41BB' : 'none',
             borderRadius: '5px',
             width: props.node.attrs.width,
             height: props.node.attrs.height,
@@ -115,6 +122,8 @@ export const ImageResizeComponent = (props: any) => {
           lockAspectRatio={aspectRatio}
           maxWidth={maxWidth}
           maxHeight={maxHeight}
+          minHeight={40}
+          minWidth={40}
           enable={
             editable
               ? {
@@ -158,6 +167,8 @@ export const ImageResizeComponent = (props: any) => {
               height: '100%',
               objectFit: 'contain',
               borderRadius: '5px',
+              outline: props.selected ? '3px solid #0C41BB' : 'none',
+              outlineOffset: '-3px',
             }}
           />
         </Resizable>
